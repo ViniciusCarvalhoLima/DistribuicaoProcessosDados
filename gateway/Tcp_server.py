@@ -1,0 +1,1 @@
+# Cliente conecta aqui, Também pode servir para comandos para sensores.

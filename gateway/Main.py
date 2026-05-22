@@ -1,0 +1,1 @@
+# Ponto principal do Gateway, iniciar TCP iniciar UDP iniciar multicast iniciar registro.

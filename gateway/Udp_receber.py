@@ -1,0 +1,1 @@
+# Recebe dados dos sensores.

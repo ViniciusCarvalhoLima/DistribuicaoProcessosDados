@@ -1,0 +1,1 @@
+# Toda lógica multicast enviar descoberta e receber resposta dos sensores.
