@@ -1,5 +1,8 @@
 import time
 from abc import ABC, abstractmethod
+import socket
+import struct
+import threading
 
 
 class SensorBase(ABC):
@@ -35,3 +38,54 @@ class SensorBase(ABC):
 
     def exibir_dados(self, dados):
         print(f"[{self.id_sensor}] {dados}")
+
+
+
+    def ouvir_descoberta(self):
+        socket_multicast = socket.socket(
+            socket.AF_INET,
+            socket.SOCK_DGRAM,
+            socket.IPPROTO_UDP
+        )
+
+        socket_multicast.setsockopt(
+            socket.SOL_SOCKET,
+            socket.SO_REUSEADDR,
+            1
+        )
+
+        socket_multicast.bind(("", 5002))
+
+        grupo = socket.inet_aton("224.1.1.1")
+
+        mreq = struct.pack("4sL", grupo, socket.INADDR_ANY)
+
+        socket_multicast.setsockopt(
+            socket.IPPROTO_IP,
+            socket.IP_ADD_MEMBERSHIP,
+            mreq
+        )
+
+        print(
+            f"[{self.id_sensor}] Escutando descoberta multicast..."
+        )
+
+        while True:
+            mensagem, endereco = socket_multicast.recvfrom(1024)
+
+            mensagem = mensagem.decode()
+
+            if mensagem == "DESCOBRIR_SENSORES":
+                print(f"[{self.id_sensor}] Descoberta recebida!")
+
+                resposta = (
+                    f"{self.id_sensor}|"
+                    f"{self.tipo_sensor}|"
+                    f"{'ATIVO' if self.ativo else 'INATIVO'}"
+                )
+
+                socket_multicast.sendto(
+                    resposta.encode(),
+                    endereco
+                )
+

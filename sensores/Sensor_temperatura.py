@@ -1,8 +1,9 @@
 import random
-import sys
+import os
+import time
 import threading
 
-from Sensor_base import SensorBase
+from sensores.Sensor_base import SensorBase
 
 
 class SensorTemperatura(SensorBase):
@@ -33,7 +34,11 @@ class SensorTemperatura(SensorBase):
             elif comando == "ligar":
                 if not self.ativo:
                     self.ativo = True
-                    threading.Thread(target=self.iniciar).start()
+
+                    threading.Thread(
+                        target=self.iniciar,
+                        daemon=True
+                    ).start()
 
             elif comando == "sair":
                 self.desligar()
@@ -42,14 +47,29 @@ class SensorTemperatura(SensorBase):
                     f"\n[{self.id_sensor}] Encerrando processo...\n"
                 )
 
-                sys.exit()
+                os._exit(0)
+
+            else:
+                print("\nComando inválido.")
 
     def executar(self):
         threading.Thread(
-            target=self.ouvir_comandos
+            target=self.ouvir_comandos,
+            daemon=True
         ).start()
 
-        self.iniciar()
+        threading.Thread(
+            target=self.ouvir_descoberta,
+            daemon=True
+        ).start()
+
+        threading.Thread(
+            target=self.iniciar,
+            daemon=True
+        ).start()
+
+        while True:
+            time.sleep(1)
 
 
 if __name__ == "__main__":
