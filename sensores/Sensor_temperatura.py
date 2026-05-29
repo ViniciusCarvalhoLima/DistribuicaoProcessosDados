@@ -5,21 +5,20 @@ import threading
 from Sensor_base import SensorBase
 
 
-class SensorQualidadeAr(SensorBase):
+class SensorTemperatura(SensorBase):
     def __init__(self):
         super().__init__(
-            tipo_sensor="AR",
+            tipo_sensor="TEMP",
             intervalo=5
         )
 
     def gerar_dados(self):
-        co2 = random.randint(300, 700)
-        COVs = random.randint(0, 500)
+        temperatura = random.randint(25, 35)
+        umidade = random.randint(50, 90)
 
         return {
-            "CO2": f"{co2} ppm",
-            "COVs": f"{COVs} ppb",
-            "Estado": "ATIVO" if self.ativo else "INATIVO"
+            "Temperatura": f"{temperatura}°C",
+            "Umidade": f"{umidade}%"
         }
 
     def ouvir_comandos(self):
@@ -39,15 +38,20 @@ class SensorQualidadeAr(SensorBase):
             elif comando == "sair":
                 self.desligar()
 
-                print(f"\n[{self.id_sensor}] Encerrando processo...\n")
+                print(
+                    f"\n[{self.id_sensor}] Encerrando processo...\n"
+                )
 
                 sys.exit()
 
     def executar(self):
-        threading.Thread(target=self.ouvir_comandos).start()
+        threading.Thread(
+            target=self.ouvir_comandos
+        ).start()
+
         self.iniciar()
 
 
 if __name__ == "__main__":
-    sensor = SensorQualidadeAr()
+    sensor = SensorTemperatura()
     sensor.executar()
