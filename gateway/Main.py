@@ -9,7 +9,7 @@ from shared.Constants import (
 )
 
 from gateway.Tcp_server import iniciar_servidor_tcp
-
+from gateway.Udp_receber import iniciar_udp_receiver
 
 sensores_registrados = {}
 
@@ -112,3 +112,7 @@ def iniciar_gateway():
 
 if __name__ == "__main__":
     iniciar_gateway()
+    threading.Thread(
+    target=iniciar_udp_receiver,
+    daemon=True
+).start()

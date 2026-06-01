@@ -1,6 +1,7 @@
 from cliente.Cliente_tcp import enviar_mensagem_gateway
 
 
+
 def exibir_menu():
     print("\n===== Cliente Analítico =====")
     print("1 - Listar sensores conectados")

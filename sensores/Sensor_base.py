@@ -27,12 +27,33 @@ class SensorBase(ABC):
             if self.ativo:
                 dados = self.gerar_dados()
                 self.exibir_dados(dados)
+                self.enviar_dados_udp(dados)
+
 
             time.sleep(self.intervalo)
 
     def desligar(self):
         self.ativo = False
         print(f"\n[{self.id_sensor}] Sensor desligado.\n")
+
+    def enviar_dados_udp(self, dados):
+        socket_udp = socket.socket(
+            socket.AF_INET,
+            socket.SOCK_DGRAM
+        )
+
+        mensagem = (
+            f"{self.id_sensor}|"
+            f"{self.tipo_sensor}|"
+            f"{dados}"
+        )
+
+        socket_udp.sendto(
+            mensagem.encode(),
+            ("127.0.0.1", 5001)
+        )
+
+        socket_udp.close()
 
     def ligar(self):
         self.ativo = True
