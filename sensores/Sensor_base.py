@@ -14,7 +14,7 @@ class SensorBase(ABC):
     def __init__(self, tipo_sensor, intervalo=5, porta_comando=6000):
         SensorBase.contador_sensores += 1
 
-        self.id_sensor = f"{tipo_sensor}_{SensorBase.contador_sensores:02d}"
+        self.id_sensor = f"{tipo_sensor}_{SensorBase.contador_sensores:02d}".lower()
         self.tipo_sensor = tipo_sensor
         self.intervalo = intervalo
         self.porta_comando = porta_comando

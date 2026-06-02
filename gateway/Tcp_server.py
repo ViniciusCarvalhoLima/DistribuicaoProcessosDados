@@ -73,6 +73,12 @@ def processar_mensagem_cliente(mensagem, sensores_registrados):
     if acao == "LISTAR":
         return formatar_lista_sensores(sensores_registrados)
 
+    elif acao == "DESLIGAR_TODOS":
+        return desligar_todos_sensores(sensores_registrados)
+    
+    elif acao == "LIGAR_TODOS":
+        return ligar_todos_sensores(sensores_registrados)
+
     elif acao == "COMANDO":
         if len(partes) != 3:
             return "Formato inválido. Use: COMANDO|ID_SENSOR|COMANDO"
@@ -130,3 +136,45 @@ def iniciar_servidor_tcp(sensores_registrados):
         )
 
         cliente.close()
+
+def desligar_todos_sensores(sensores_registrados):
+    if not sensores_registrados:
+        return "Nenhum sensor registrado."
+
+    respostas = "\nResultado ao desligar sensores:\n"
+
+    for id_sensor, dados in sensores_registrados.items():
+        if dados["estado"] == "DESCONECTADO":
+            respostas += f"\n{id_sensor}: já está desconectado."
+            continue
+
+        resposta = enviar_comando_para_sensor(
+            sensores_registrados,
+            id_sensor,
+            "desligar"
+        )
+
+        respostas += f"\n{id_sensor}: {resposta}"
+
+    return respostas
+
+def ligar_todos_sensores(sensores_registrados):
+    if not sensores_registrados:
+        return "Nenhum sensor registrado."
+
+    respostas = "\nResultado ao ligar sensores:\n"
+
+    for id_sensor, dados in sensores_registrados.items():
+        if dados["estado"] == "DESCONECTADO":
+            respostas += f"\n{id_sensor}: não foi possível ligar, sensor desconectado."
+            continue
+
+        resposta = enviar_comando_para_sensor(
+            sensores_registrados,
+            id_sensor,
+            "ligar"
+        )
+
+        respostas += f"\n{id_sensor}: {resposta}"
+
+    return respostas

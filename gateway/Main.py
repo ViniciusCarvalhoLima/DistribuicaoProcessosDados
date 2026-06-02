@@ -101,14 +101,17 @@ def iniciar_gateway():
         args=(sensores_registrados,),
         daemon=True
     ).start()
-    
+
+    threading.Thread(
+        target=iniciar_udp_receiver,
+        daemon=True
+    ).start()
+
     while True:
         descobrir_sensores()
         atualizar_estado_sensores()
         exibir_sensores_registrados()
-
         time.sleep(5)
-
 
 if __name__ == "__main__":
     iniciar_gateway()

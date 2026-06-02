@@ -6,8 +6,9 @@ def exibir_menu():
     print("\n===== Cliente Analítico =====")
     print("1 - Listar sensores conectados")
     print("2 - Enviar comando para sensor")
-    print("3 - Sair")
-
+    print("3 - Desligar todos os sensores")
+    print("4 - Ligar todos os sensores")
+    print("5 - Sair")
 
 def listar_sensores():
     resposta = enviar_mensagem_gateway("LISTAR")
@@ -44,11 +45,25 @@ def iniciar_cliente():
             enviar_comando()
 
         elif opcao == "3":
+            desligar_todos_sensores()
+
+        elif opcao == "4":
+            ligar_todos_sensores()
+
+        elif opcao == "5":
             print("\nEncerrando Cliente Analítico...")
             break
 
         else:
             print("\nOpção inválida.")
+
+def desligar_todos_sensores():
+    resposta = enviar_mensagem_gateway("DESLIGAR_TODOS")
+    print(resposta)
+
+def ligar_todos_sensores():
+    resposta = enviar_mensagem_gateway("LIGAR_TODOS")
+    print(resposta)
 
 
 if __name__ == "__main__":
