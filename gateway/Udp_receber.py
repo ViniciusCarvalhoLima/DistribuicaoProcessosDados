@@ -18,8 +18,6 @@ def iniciar_udp_receiver(sensores_registrados):
 
     while True:
         dados, endereco = socket_udp.recvfrom(BUFFER)
-        print(f"[DEBUG] de {endereco}: {dados[:50]}")  # ← aqui
-
         msg = Mensagens_pb2.DadosSensor()
         msg.ParseFromString(dados)
 
