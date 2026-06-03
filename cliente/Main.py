@@ -20,6 +20,7 @@ def enviar_comando():
 
     print("\nComandos disponíveis:")
     print("- ligar")
+    print("- frequencia|N  (ex: frequencia|5)")
     print("- desligar")
     print("- encerrar")
 

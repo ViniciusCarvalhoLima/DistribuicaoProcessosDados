@@ -104,6 +104,7 @@ def iniciar_gateway():
 
     threading.Thread(
         target=iniciar_udp_receiver,
+        args=(sensores_registrados,),
         daemon=True
     ).start()
 

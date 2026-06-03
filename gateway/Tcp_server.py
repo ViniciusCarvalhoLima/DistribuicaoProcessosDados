@@ -1,4 +1,7 @@
 import socket
+import sys, os
+import Mensagens_pb2
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'proto'))
 
 from shared.Constants import (
     HOST,
@@ -54,6 +57,10 @@ def enviar_comando_para_sensor(sensores_registrados, id_sensor, comando):
         resposta_sensor = conexao_sensor.recv(BUFFER).decode()
 
         conexao_sensor.close()
+        if comando == "desligar":
+            dados_sensor["estado"] = "INATIVO"
+        elif comando == "ligar":
+            dados_sensor["estado"] = "ATIVO"
 
         return resposta_sensor
 
@@ -80,11 +87,11 @@ def processar_mensagem_cliente(mensagem, sensores_registrados):
         return ligar_todos_sensores(sensores_registrados)
 
     elif acao == "COMANDO":
-        if len(partes) != 3:
+        if len(partes) < 3:
             return "Formato inválido. Use: COMANDO|ID_SENSOR|COMANDO"
 
         id_sensor = partes[1]
-        comando = partes[2].lower()
+        comando = "|".join(partes[2:]).lower()
 
         return enviar_comando_para_sensor(
             sensores_registrados,
@@ -97,44 +104,40 @@ def processar_mensagem_cliente(mensagem, sensores_registrados):
 
 
 def iniciar_servidor_tcp(sensores_registrados):
-    servidor = socket.socket(
-        socket.AF_INET,
-        socket.SOCK_STREAM
-    )
+    import sys, os
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'proto'))
+    import Mensagens_pb2
 
-    servidor.setsockopt(
-        socket.SOL_SOCKET,
-        socket.SO_REUSEADDR,
-        1
-    )
-
-    servidor.bind(
-        (HOST, GATEWAY_TCP_PORT)
-    )
-
+    servidor = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    servidor.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    servidor.bind((HOST, GATEWAY_TCP_PORT))
     servidor.listen()
 
-    print(
-        f"Gateway TCP escutando na porta {GATEWAY_TCP_PORT}"
-    )
+    print(f"Gateway TCP escutando na porta {GATEWAY_TCP_PORT}")
 
     while True:
         cliente, endereco = servidor.accept()
+        dados = cliente.recv(BUFFER)
 
-        mensagem = cliente.recv(BUFFER).decode()
+        cmd = Mensagens_pb2.Comando()
+        cmd.ParseFromString(dados)
+
+        # reconstrói mensagem no formato interno
+        if cmd.parametro:
+            mensagem = f"{cmd.acao}|{cmd.id_sensor}|{cmd.parametro}"
+        elif cmd.id_sensor:
+            mensagem = f"{cmd.acao}|{cmd.id_sensor}"
+        else:
+            mensagem = cmd.acao
 
         print(f"\nCliente conectado: {endereco}")
         print(f"Mensagem recebida: {mensagem}")
 
-        resposta = processar_mensagem_cliente(
-            mensagem,
-            sensores_registrados
-        )
+        resultado = processar_mensagem_cliente(mensagem, sensores_registrados)
 
-        cliente.send(
-            resposta.encode()
-        )
-
+        resp = Mensagens_pb2.Resposta()
+        resp.mensagem = resultado
+        cliente.send(resp.SerializeToString())
         cliente.close()
 
 def desligar_todos_sensores(sensores_registrados):

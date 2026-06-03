@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+message DadosSensor {
+  string id_sensor = 1;
+  string tipo = 2;
+  string payload = 3;
+}
+
+message Comando {
+  string acao = 1;
+  string id_sensor = 2;
+  string parametro = 3;
+}
+
+message Resposta {
+  string mensagem = 1;
+}
+
+message RegistroSensor {
+  string id_sensor = 1;
+  string tipo = 2;
+  string estado = 3;
+  int32 porta_comando = 4;
+}

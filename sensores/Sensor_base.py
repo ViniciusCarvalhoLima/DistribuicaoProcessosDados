@@ -3,6 +3,12 @@ import socket
 import struct
 import threading
 import os
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'proto'))
+import Mensagens_pb2
+
+
 
 from abc import ABC, abstractmethod
 from shared.Constants import MULTICAST_GROUP, MULTICAST_PORT, BUFFER, HOST
@@ -37,24 +43,17 @@ class SensorBase(ABC):
         print(f"\n[{self.id_sensor}] Sensor desligado.\n")
 
     def enviar_dados_udp(self, dados):
-        socket_udp = socket.socket(
-            socket.AF_INET,
-            socket.SOCK_DGRAM
-        )
 
-        mensagem = (
-            f"{self.id_sensor}|"
-            f"{self.tipo_sensor}|"
-            f"{dados}"
-        )
+        msg = Mensagens_pb2.DadosSensor()
+        msg.id_sensor = self.id_sensor
+        msg.tipo = self.tipo_sensor
+        msg.payload = str(dados)
 
-        socket_udp.sendto(
-            mensagem.encode(),
-            ("127.0.0.1", 5001)
-        )
-
+        socket_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        socket_udp.sendto(msg.SerializeToString(), ("127.0.0.1", 5001))
         socket_udp.close()
 
+    
     def ligar(self):
         self.ativo = True
         print(f"\n[{self.id_sensor}] Sensor ligado.\n")
@@ -147,6 +146,15 @@ class SensorBase(ABC):
                 self.desligar()
                 resposta = "Sensor desligado com sucesso."
 
+            elif comando.startswith("frequencia|"):
+                try:
+                    novo_intervalo = int(comando.split("|")[1])
+                    self.intervalo = novo_intervalo
+                    self.notificar_gateway(f"FREQUENCIA_ALTERADA|{novo_intervalo}")
+                    resposta = f"Frequência alterada para {novo_intervalo}s."
+                except (IndexError, ValueError):
+                    resposta = "Formato inválido. Use: frequencia|N"
+
             elif comando == "encerrar":
                 resposta = "Sensor será encerrado."
                 conexao.send(resposta.encode())
@@ -158,6 +166,20 @@ class SensorBase(ABC):
 
             conexao.send(resposta.encode())
             conexao.close()
+
+    def notificar_gateway(self, evento):
+        try:
+            msg = Mensagens_pb2.DadosSensor()
+            msg.id_sensor = self.id_sensor
+            msg.tipo = self.tipo_sensor
+            msg.payload = evento
+
+            socket_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            socket_udp.sendto(msg.SerializeToString(), ("127.0.0.1", 5001))
+            socket_udp.close()
+            print(f"[{self.id_sensor}] Notificação enviada: {evento}")
+        except Exception as e:
+            print(f"[{self.id_sensor}] Erro ao notificar gateway: {e}")
 
     def executar_base(self):
         threading.Thread(
