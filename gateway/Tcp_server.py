@@ -22,10 +22,10 @@ def formatar_lista_sensores(sensores_registrados):
             f"\nID: {id_sensor}"
             f"\nTipo: {dados['tipo']}"
             f"\nEstado: {dados['estado']}"
+            f"\nIP: {dados['ip']}"
             f"\nPorta comando: {dados['porta_comando']}"
-            f"\nÚltimo contato: {dados['ultimo_contato']}"
             f"\n"
-        )
+)
 
     return resposta
 
@@ -40,6 +40,7 @@ def enviar_comando_para_sensor(sensores_registrados, id_sensor, comando):
         return "Não foi possível enviar comando. Sensor desconectado."
 
     porta_comando = dados_sensor["porta_comando"]
+    ip_sensor = dados_sensor["ip"]
 
     try:
         conexao_sensor = socket.socket(
@@ -48,7 +49,7 @@ def enviar_comando_para_sensor(sensores_registrados, id_sensor, comando):
         )
 
         conexao_sensor.connect(
-            (HOST, porta_comando)
+            (ip_sensor, porta_comando)
         )
 
         comando_proto = Mensagens_pb2.Comando()

@@ -113,6 +113,7 @@ class SensorBase(ABC):
                 resposta.tipo = self.tipo_sensor
                 resposta.estado = "ATIVO" if self.ativo else "INATIVO"
                 resposta.porta_comando = self.porta_comando
+                resposta.ip = HOST
 
                 socket_multicast.sendto(
                     resposta.SerializeToString(),

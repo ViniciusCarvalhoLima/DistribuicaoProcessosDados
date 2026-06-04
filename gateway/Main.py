@@ -22,6 +22,7 @@ def registrar_sensor(registro_sensor):
     sensores_registrados[registro_sensor.id_sensor] = {
         "tipo": registro_sensor.tipo,
         "estado": registro_sensor.estado,
+        "ip": registro_sensor.ip,
         "porta_comando": int(registro_sensor.porta_comando),
         "ultimo_contato": time.time()
     }
@@ -92,6 +93,7 @@ def exibir_sensores_registrados():
             f"- {id_sensor} | "
             f"Tipo: {dados['tipo']} | "
             f"Estado: {dados['estado']} | "
+            f"IP: {dados['ip']} | "
             f"Porta comando: {dados['porta_comando']}"
         )
 

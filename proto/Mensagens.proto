@@ -21,4 +21,5 @@ message RegistroSensor {
   string tipo = 2;
   string estado = 3;
   int32 porta_comando = 4;
+  string ip = 5;
 }

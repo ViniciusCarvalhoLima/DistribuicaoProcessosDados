@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0fMensagens.proto\"?\n\x0b\x44\x61\x64osSensor\x12\x11\n\tid_sensor\x18\x01 \x01(\t\x12\x0c\n\x04tipo\x18\x02 \x01(\t\x12\x0f\n\x07payload\x18\x03 \x01(\t\"=\n\x07\x43omando\x12\x0c\n\x04\x61\x63\x61o\x18\x01 \x01(\t\x12\x11\n\tid_sensor\x18\x02 \x01(\t\x12\x11\n\tparametro\x18\x03 \x01(\t\"\x1c\n\x08Resposta\x12\x10\n\x08mensagem\x18\x01 \x01(\t\"X\n\x0eRegistroSensor\x12\x11\n\tid_sensor\x18\x01 \x01(\t\x12\x0c\n\x04tipo\x18\x02 \x01(\t\x12\x0e\n\x06\x65stado\x18\x03 \x01(\t\x12\x15\n\rporta_comando\x18\x04 \x01(\x05\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0fMensagens.proto\"?\n\x0b\x44\x61\x64osSensor\x12\x11\n\tid_sensor\x18\x01 \x01(\t\x12\x0c\n\x04tipo\x18\x02 \x01(\t\x12\x0f\n\x07payload\x18\x03 \x01(\t\"=\n\x07\x43omando\x12\x0c\n\x04\x61\x63\x61o\x18\x01 \x01(\t\x12\x11\n\tid_sensor\x18\x02 \x01(\t\x12\x11\n\tparametro\x18\x03 \x01(\t\"\x1c\n\x08Resposta\x12\x10\n\x08mensagem\x18\x01 \x01(\t\"d\n\x0eRegistroSensor\x12\x11\n\tid_sensor\x18\x01 \x01(\t\x12\x0c\n\x04tipo\x18\x02 \x01(\t\x12\x0e\n\x06\x65stado\x18\x03 \x01(\t\x12\x15\n\rporta_comando\x18\x04 \x01(\x05\x12\n\n\x02ip\x18\x05 \x01(\tb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -38,5 +38,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_RESPOSTA']._serialized_start=147
   _globals['_RESPOSTA']._serialized_end=175
   _globals['_REGISTROSENSOR']._serialized_start=177
-  _globals['_REGISTROSENSOR']._serialized_end=265
+  _globals['_REGISTROSENSOR']._serialized_end=277
 # @@protoc_insertion_point(module_scope)
