@@ -65,7 +65,8 @@ def iniciar_cliente():
             campo = input("Campo (ex: Temperatura, CO2, Umidade): ")
             print(enviar_mensagem_gateway(f"DESVIO|{id_sensor}|{campo}"))
         elif opcao == "7":
-            print(enviar_mensagem_gateway("MAIOR_VARIACAO"))
+            campo = input("Campo (ex: Temperatura, CO2, Umidade): ")
+            print(enviar_mensagem_gateway(f"MAIOR_VARIACAO|{campo}"))
         elif opcao == "8":
             print("\nEncerrando Cliente Analítico...")
             break

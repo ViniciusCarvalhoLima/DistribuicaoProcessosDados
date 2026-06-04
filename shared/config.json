@@ -1,0 +1,7 @@
+{
+  "host": "127.0.0.1",
+  "gateway_udp_port": 5001,
+  "multicast_port": 5002,
+  "multicast_group": "224.1.1.1",
+  "sensor_noise_port": 6003
+}

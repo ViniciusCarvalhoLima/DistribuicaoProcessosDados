@@ -40,7 +40,14 @@ def calcular_media(historico, id_sensor, campo):
         if hora_atual - leitura["timestamp"] <= 3600:
             try:
                 payload = ast.literal_eval(leitura["payload"])
-                raw = payload[campo].split()[0]
+                
+                valor_campo = obter_valor_campo(payload, campo)
+
+                if valor_campo is None:
+                    continue
+
+                raw = valor_campo.split()[0]
+
                 raw = raw.replace("°C", "").replace("°", "").replace("%", "")
                 valor = float(raw)
                 valores.append(valor)
@@ -65,8 +72,15 @@ def calcular_desvio(historico, id_sensor, campo):
         if hora_atual - leitura["timestamp"] <= 86400:
             try:
                 payload = ast.literal_eval(leitura["payload"])
-                raw = payload[campo].split()[0]
+
+                valor_campo = obter_valor_campo(payload, campo)
+
+                if valor_campo is None:
+                    continue
+
+                raw = valor_campo.split()[0]
                 raw = raw.replace("°C", "").replace("°", "").replace("%", "")
+
                 valor = float(raw)
                 valores.append(valor)
             except Exception:
@@ -81,7 +95,7 @@ def calcular_desvio(historico, id_sensor, campo):
     return f"Desvio padrão de {campo} ({id_sensor}) 24h: {desvio:.1f} ({len(valores)} leituras)"
 
 
-def sensor_maior_variacao(historico):
+def sensor_maior_variacao(historico, campo):
     if not historico:
         return "Sem dados históricos."
 
@@ -89,11 +103,22 @@ def sensor_maior_variacao(historico):
 
     for id_sensor, leituras in historico.items():
         valores = []
+
         for leitura in leituras:
             try:
                 payload = ast.literal_eval(leitura["payload"])
-                primeiro_valor = float(list(payload.values())[0].split()[0])
-                valores.append(primeiro_valor)
+
+                valor_campo = obter_valor_campo(payload, campo)
+
+                if valor_campo is None:
+                    continue
+
+                raw = valor_campo.split()[0]
+                raw = raw.replace("°C", "").replace("°", "").replace("%", "")
+
+                valor = float(raw)
+                valores.append(valor)
+
             except Exception:
                 pass
 
@@ -101,10 +126,14 @@ def sensor_maior_variacao(historico):
             resultado[id_sensor] = max(valores) - min(valores)
 
     if not resultado:
-        return "Dados insuficientes para calcular variação."
+        return f"Dados insuficientes para calcular variação de {campo}."
 
     sensor = max(resultado, key=resultado.get)
-    return f"Sensor com maior variação: {sensor} (variação: {resultado[sensor]:.1f})"
+
+    return (
+        f"Sensor com maior variação em {campo}: "
+        f"{sensor} (variação: {resultado[sensor]:.1f})"
+    )
 
 
 def enviar_comando_para_sensor(sensores_registrados, id_sensor, comando):
@@ -162,20 +191,28 @@ def processar_mensagem_cliente(mensagem, sensores_registrados, historico):
 
     if acao == "LISTAR":
         return formatar_lista_sensores(sensores_registrados)
+    
     elif acao == "MEDIA":
         if len(partes) < 3:
             return "Formato inválido. Use: MEDIA|ID_SENSOR|CAMPO"
         return calcular_media(historico, partes[1], partes[2])
+    
     elif acao == "DESVIO":
         if len(partes) < 3:
             return "Formato inválido. Use: DESVIO|ID_SENSOR|CAMPO"
         return calcular_desvio(historico, partes[1], partes[2])
+    
     elif acao == "MAIOR_VARIACAO":
-        return sensor_maior_variacao(historico)
+        if len(partes) < 2:
+            return "Formato inválido. Use: MAIOR_VARIACAO|CAMPO"
+        return sensor_maior_variacao(historico, partes[1])
+    
     elif acao == "DESLIGAR_TODOS":
         return desligar_todos_sensores(sensores_registrados)
+    
     elif acao == "LIGAR_TODOS":
         return ligar_todos_sensores(sensores_registrados)
+    
     elif acao == "COMANDO":
         if len(partes) < 3:
             return "Formato inválido. Use: COMANDO|ID_SENSOR|COMANDO"
@@ -251,3 +288,10 @@ def ligar_todos_sensores(sensores_registrados):
         respostas += f"\n{id_sensor}: {resposta}"
 
     return respostas
+
+def obter_valor_campo(payload, campo):
+    for chave, valor in payload.items():
+        if chave.lower() == campo.lower():
+            return valor
+
+    return None

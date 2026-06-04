@@ -1,0 +1,24 @@
+{
+  "name": "distribuicaoprocessosdados",
+  "version": "1.0.0",
+  "description": "Trabalho para a disciplina de DISTRIBUIÇÃO DE PROCESSOS E DADOS da Universidade Federal do Ceará",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ViniciusCarvalhoLima/DistribuicaoProcessosDados.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ViniciusCarvalhoLima/DistribuicaoProcessosDados/issues"
+  },
+  "homepage": "https://github.com/ViniciusCarvalhoLima/DistribuicaoProcessosDados#readme",
+  "dependencies": {
+    "protobufjs": "^8.5.0"
+  }
+}
