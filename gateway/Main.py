@@ -16,6 +16,7 @@ from gateway.Tcp_server import iniciar_servidor_tcp
 from gateway.Udp_receber import iniciar_udp_receiver
 
 sensores_registrados = {}
+historico = {}  # ← adicionar aqui
 
 
 def registrar_sensor(registro_sensor):
@@ -104,13 +105,13 @@ def iniciar_gateway():
 
     threading.Thread(
         target=iniciar_servidor_tcp,
-        args=(sensores_registrados,),
+        args=(sensores_registrados, historico),  
         daemon=True
     ).start()
 
     threading.Thread(
         target=iniciar_udp_receiver,
-        args=(sensores_registrados,),
+        args=(sensores_registrados, historico),  
         daemon=True
     ).start()
 
