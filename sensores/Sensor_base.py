@@ -96,21 +96,26 @@ class SensorBase(ABC):
         print(f"[{self.id_sensor}] Escutando descoberta multicast...")
 
         while True:
-            mensagem, endereco = socket_multicast.recvfrom(BUFFER)
-            mensagem = mensagem.decode()
+            dados_recebidos, endereco = socket_multicast.recvfrom(BUFFER)
 
-            if mensagem == "DESCOBRIR_SENSORES":
+            comando_descoberta = Mensagens_pb2.Comando()
+
+            try:
+                comando_descoberta.ParseFromString(dados_recebidos)
+            except Exception:
+                continue
+
+            if comando_descoberta.acao == "DESCOBRIR_SENSORES":
                 print(f"[{self.id_sensor}] Descoberta recebida!")
 
-                resposta = (
-                    f"{self.id_sensor}|"
-                    f"{self.tipo_sensor}|"
-                    f"{'ATIVO' if self.ativo else 'INATIVO'}|"
-                    f"{self.porta_comando}"
-                )
+                resposta = Mensagens_pb2.RegistroSensor()
+                resposta.id_sensor = self.id_sensor
+                resposta.tipo = self.tipo_sensor
+                resposta.estado = "ATIVO" if self.ativo else "INATIVO"
+                resposta.porta_comando = self.porta_comando
 
                 socket_multicast.sendto(
-                    resposta.encode(),
+                    resposta.SerializeToString(),
                     endereco
                 )
 
@@ -136,35 +141,59 @@ class SensorBase(ABC):
         while True:
             conexao, endereco = servidor.accept()
 
-            comando = conexao.recv(BUFFER).decode().lower()
+            dados_recebidos = conexao.recv(BUFFER)
 
-            if comando == "ligar":
+            comando_proto = Mensagens_pb2.Comando()
+            comando_proto.ParseFromString(dados_recebidos)
+
+            acao = comando_proto.acao.lower()
+            parametro = comando_proto.parametro
+
+            resposta_proto = Mensagens_pb2.Resposta()
+
+            if acao == "ligar":
                 self.ligar()
-                resposta = "Sensor ligado com sucesso."
+                resposta_proto.mensagem = "Sensor ligado com sucesso."
 
-            elif comando == "desligar":
+            elif acao == "desligar":
                 self.desligar()
-                resposta = "Sensor desligado com sucesso."
+                resposta_proto.mensagem = "Sensor desligado com sucesso."
 
-            elif comando.startswith("frequencia|"):
+            elif acao == "frequencia":
                 try:
-                    novo_intervalo = int(comando.split("|")[1])
+                    novo_intervalo = int(parametro)
                     self.intervalo = novo_intervalo
-                    self.notificar_gateway(f"FREQUENCIA_ALTERADA|{novo_intervalo}")
-                    resposta = f"Frequência alterada para {novo_intervalo}s."
-                except (IndexError, ValueError):
-                    resposta = "Formato inválido. Use: frequencia|N"
 
-            elif comando == "encerrar":
-                resposta = "Sensor será encerrado."
-                conexao.send(resposta.encode())
+                    self.notificar_gateway(
+                        f"FREQUENCIA_ALTERADA|{novo_intervalo}"
+                    )
+
+                    resposta_proto.mensagem = (
+                        f"Frequência alterada para {novo_intervalo}s."
+                    )
+
+                except ValueError:
+                    resposta_proto.mensagem = (
+                        "Parâmetro inválido. Use: frequencia|N"
+                    )
+
+            elif acao == "encerrar":
+                resposta_proto.mensagem = "Sensor será encerrado."
+
+                conexao.send(
+                    resposta_proto.SerializeToString()
+                )
+
                 conexao.close()
                 self.encerrar()
 
             else:
-                resposta = "Comando inválido."
+                resposta_proto.mensagem = "Comando inválido."
 
-            conexao.send(resposta.encode())
+            conexao.send(
+                resposta_proto.SerializeToString()
+            )
+
             conexao.close()
 
     def notificar_gateway(self, evento):
@@ -193,32 +222,9 @@ class SensorBase(ABC):
         ).start()
 
         threading.Thread(
-            target=self.ouvir_comandos_locais,
-            daemon=True
-        ).start()
-
-        threading.Thread(
             target=self.iniciar,
             daemon=True
         ).start()
 
         while True:
             time.sleep(1)
-
-    def ouvir_comandos_locais(self):
-        while True:
-            comando = input(
-                "\nComando local (ligar/desligar/sair): "
-            ).lower()
-
-            if comando == "ligar":
-                self.ligar()
-
-            elif comando == "desligar":
-                self.desligar()
-
-            elif comando == "sair":
-                self.encerrar()
-
-            else:
-                print("\nComando inválido.")

@@ -1,6 +1,10 @@
 import socket
 import time
 import threading
+import sys, os
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'proto'))
+import Mensagens_pb2
 
 from shared.Constants import (
     MULTICAST_GROUP,
@@ -14,19 +18,13 @@ from gateway.Udp_receber import iniciar_udp_receiver
 sensores_registrados = {}
 
 
-def registrar_sensor(resposta_sensor):
-    try:
-        id_sensor, tipo_sensor, estado_sensor, porta_comando = resposta_sensor.split("|")
-
-        sensores_registrados[id_sensor] = {
-            "tipo": tipo_sensor,
-            "estado": estado_sensor,
-            "porta_comando": int(porta_comando),
-            "ultimo_contato": time.time()
-        }
-
-    except ValueError:
-        print(f"Resposta inválida recebida: {resposta_sensor}")
+def registrar_sensor(registro_sensor):
+    sensores_registrados[registro_sensor.id_sensor] = {
+        "tipo": registro_sensor.tipo,
+        "estado": registro_sensor.estado,
+        "porta_comando": int(registro_sensor.porta_comando),
+        "ultimo_contato": time.time()
+    }
 
 
 def descobrir_sensores():
@@ -44,10 +42,11 @@ def descobrir_sensores():
 
     socket_gateway.settimeout(3)
 
-    mensagem = "DESCOBRIR_SENSORES"
+    comando_descoberta = Mensagens_pb2.Comando()
+    comando_descoberta.acao = "DESCOBRIR_SENSORES"
 
     socket_gateway.sendto(
-        mensagem.encode(),
+        comando_descoberta.SerializeToString(),
         (MULTICAST_GROUP, MULTICAST_PORT)
     )
 
@@ -55,13 +54,18 @@ def descobrir_sensores():
 
     while time.time() - inicio < 3:
         try:
-            resposta, endereco = socket_gateway.recvfrom(BUFFER)
-            resposta = resposta.decode()
+            dados_recebidos, endereco = socket_gateway.recvfrom(BUFFER)
 
-            registrar_sensor(resposta)
+            registro_sensor = Mensagens_pb2.RegistroSensor()
+            registro_sensor.ParseFromString(dados_recebidos)
+
+            registrar_sensor(registro_sensor)
 
         except socket.timeout:
             break
+
+        except Exception as erro:
+            print(f"Erro ao processar resposta multicast: {erro}")
 
     socket_gateway.close()
 
@@ -116,7 +120,3 @@ def iniciar_gateway():
 
 if __name__ == "__main__":
     iniciar_gateway()
-    threading.Thread(
-    target=iniciar_udp_receiver,
-    daemon=True
-).start()

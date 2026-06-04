@@ -1,7 +1,8 @@
 import socket
 import sys, os
-import Mensagens_pb2
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'proto'))
+import Mensagens_pb2
 
 from shared.Constants import (
     HOST,
@@ -50,19 +51,36 @@ def enviar_comando_para_sensor(sensores_registrados, id_sensor, comando):
             (HOST, porta_comando)
         )
 
+        comando_proto = Mensagens_pb2.Comando()
+        comando_proto.id_sensor = id_sensor
+
+        if comando.startswith("frequencia|"):
+            partes_comando = comando.split("|")
+            comando_proto.acao = "frequencia"
+            comando_proto.parametro = partes_comando[1]
+
+        else:
+            comando_proto.acao = comando
+            comando_proto.parametro = ""
+
         conexao_sensor.send(
-            comando.encode()
+            comando_proto.SerializeToString()
         )
 
-        resposta_sensor = conexao_sensor.recv(BUFFER).decode()
+        dados_resposta = conexao_sensor.recv(BUFFER)
+
+        resposta_proto = Mensagens_pb2.Resposta()
+        resposta_proto.ParseFromString(dados_resposta)
 
         conexao_sensor.close()
+
         if comando == "desligar":
             dados_sensor["estado"] = "INATIVO"
+
         elif comando == "ligar":
             dados_sensor["estado"] = "ATIVO"
 
-        return resposta_sensor
+        return resposta_proto.mensagem
 
     except ConnectionRefusedError:
         dados_sensor["estado"] = "DESCONECTADO"
