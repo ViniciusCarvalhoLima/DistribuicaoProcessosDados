@@ -30,14 +30,22 @@ def formatar_lista_sensores(sensores_registrados):
 
     return resposta
 
-def criar_sensor(tipo, porta, id_sensor=None):
+def criar_sensor(sensores_registrados, tipo, porta, id_sensor=None):
+    if not id_sensor:
+        return "Erro: informe um ID único para o sensor."
+
+    if id_sensor in sensores_registrados:
+        return f"Erro: ID {id_sensor} já está em uso."
+
+    for dados in sensores_registrados.values():
+        if dados["porta_comando"] == int(porta):
+            return f"Erro: porta {porta} já está em uso."
+
     tipo = tipo.upper()
 
     if tipo == "RUIDO":
         caminho_js = os.path.join(os.path.dirname(__file__), '..', 'sensores', 'Sensor_ruido.js')
-        args = ["node", caminho_js, porta]
-        if id_sensor:
-            args.append(id_sensor)
+        args = ["node", caminho_js, porta, id_sensor]
     else:
         tipos_validos = {
             "TEMP": "sensores.Sensor_temperatura",
@@ -45,9 +53,7 @@ def criar_sensor(tipo, porta, id_sensor=None):
         }
         if tipo not in tipos_validos:
             return "Tipo inválido. Use: TEMP, AR ou RUIDO."
-        args = [sys.executable, "-m", tipos_validos[tipo], porta]
-        if id_sensor:
-            args.append(id_sensor)
+        args = [sys.executable, "-m", tipos_validos[tipo], porta, id_sensor]
 
     try:
         processo = subprocess.Popen(
@@ -247,7 +253,7 @@ def processar_mensagem_cliente(mensagem, sensores_registrados, historico):
         if len(partes) < 3:
             return "Formato inválido. Use: CRIAR_SENSOR|TIPO|PORTA|ID"
         id_sensor = partes[3] if len(partes) > 3 else None
-        return criar_sensor(partes[1], partes[2], id_sensor)
+        return criar_sensor(sensores_registrados, partes[1], partes[2], id_sensor)
     
     elif acao == "COMANDO":
         if len(partes) < 3:

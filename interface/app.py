@@ -97,7 +97,7 @@ class ClienteGrafico:
 
         linha_id = ttk.Frame(frame)
         linha_id.pack(fill="x", pady=5)
-        ttk.Label(linha_id, text="ID (opcional):", width=14).pack(side="left")
+        ttk.Label(linha_id, text="ID:", width=14).pack(side="left")
         self.entrada_id_sensor = ttk.Entry(linha_id, width=20)
         self.entrada_id_sensor.pack(side="left")
 
@@ -225,16 +225,11 @@ class ClienteGrafico:
         porta = self.entrada_porta_sensor.get().strip()
         id_sensor = self.entrada_id_sensor.get().strip()
 
-        if not porta:
-            self.mostrar_resposta("Informe a porta do sensor.")
+        if not porta or not id_sensor:
+            self.mostrar_resposta("Informe a porta e o ID do sensor.")
             return
 
-        if id_sensor:
-            mensagem = f"CRIAR_SENSOR|{tipo}|{porta}|{id_sensor}"
-        else:
-            mensagem = f"CRIAR_SENSOR|{tipo}|{porta}"
-
-        self.mostrar_resposta(enviar_mensagem_gateway(mensagem))
+        self.mostrar_resposta(enviar_mensagem_gateway(f"CRIAR_SENSOR|{tipo}|{porta}|{id_sensor}"))
 
     def consultar_media(self):
         id_sensor = self.entrada_sensor_consulta.get().strip()
