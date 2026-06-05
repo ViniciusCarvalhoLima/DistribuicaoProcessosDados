@@ -3,7 +3,9 @@ import math
 import time
 import ast
 import sys, os
+import subprocess
 
+processos_sensores = {}
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'proto'))
 import Mensagens_pb2
 
@@ -28,7 +30,35 @@ def formatar_lista_sensores(sensores_registrados):
 
     return resposta
 
+def criar_sensor(tipo, porta, id_sensor=None):
+    tipo = tipo.upper()
 
+    if tipo == "RUIDO":
+        caminho_js = os.path.join(os.path.dirname(__file__), '..', 'sensores', 'Sensor_ruido.js')
+        args = ["node", caminho_js, porta]
+        if id_sensor:
+            args.append(id_sensor)
+    else:
+        tipos_validos = {
+            "TEMP": "sensores.Sensor_temperatura",
+            "AR": "sensores.Sensor_ar",
+        }
+        if tipo not in tipos_validos:
+            return "Tipo inválido. Use: TEMP, AR ou RUIDO."
+        args = [sys.executable, "-m", tipos_validos[tipo], porta]
+        if id_sensor:
+            args.append(id_sensor)
+
+    try:
+        processo = subprocess.Popen(
+            args,
+            cwd=os.path.join(os.path.dirname(__file__), '..')
+        )
+        processos_sensores[porta] = processo
+        return f"Sensor {tipo} iniciado na porta {porta}."
+    except Exception as e:
+        return f"Erro ao iniciar sensor: {e}"
+    
 def calcular_media(historico, id_sensor, campo):
     if id_sensor not in historico or not historico[id_sensor]:
         return f"Sem dados para {id_sensor}."
@@ -212,6 +242,12 @@ def processar_mensagem_cliente(mensagem, sensores_registrados, historico):
     
     elif acao == "LIGAR_TODOS":
         return ligar_todos_sensores(sensores_registrados)
+    
+    elif acao == "CRIAR_SENSOR":
+        if len(partes) < 3:
+            return "Formato inválido. Use: CRIAR_SENSOR|TIPO|PORTA|ID"
+        id_sensor = partes[3] if len(partes) > 3 else None
+        return criar_sensor(partes[1], partes[2], id_sensor)
     
     elif acao == "COMANDO":
         if len(partes) < 3:

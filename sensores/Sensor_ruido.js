@@ -11,9 +11,11 @@ const HOST = config.host;
 const GATEWAY_UDP_PORT = config.gateway_udp_port;
 const MULTICAST_PORT = config.multicast_port;
 const MULTICAST_GROUP = config.multicast_group;
-const PORTA_COMANDO = config.sensor_noise_port;
+const PORTA_COMANDO = process.argv[2] ? parseInt(process.argv[2]) : config.sensor_noise_port;
 
-const ID_SENSOR = "ruido_01";
+
+const ID_SENSOR = process.argv[3] ? process.argv[3] : "ruido_01";
+
 const TIPO_SENSOR = "RUIDO";
 
 let ativo = true;
