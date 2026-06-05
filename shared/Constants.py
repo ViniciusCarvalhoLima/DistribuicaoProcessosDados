@@ -1,7 +1,3 @@
-import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'proto'))
-
 GATEWAY_TCP_PORT = 5000
 GATEWAY_UDP_PORT = 5001
 

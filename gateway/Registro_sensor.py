@@ -1,1 +1,0 @@
-# Mantém lista dos sensores

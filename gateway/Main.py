@@ -16,7 +16,7 @@ from gateway.Tcp_server import iniciar_servidor_tcp
 from gateway.Udp_receber import iniciar_udp_receiver
 
 sensores_registrados = {}
-historico = {}  # ← adicionar aqui
+historico = {}
 
 
 def registrar_sensor(registro_sensor):

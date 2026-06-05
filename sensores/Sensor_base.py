@@ -4,7 +4,6 @@ import struct
 import threading
 import os
 import sys
-import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'proto'))
 import Mensagens_pb2
 
